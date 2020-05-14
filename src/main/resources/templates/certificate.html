@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>申请查询</title>
+    <link rel="stylesheet" type="text/css" href="/jquery-easyui-1.7.0/themes/black/easyui.css">
+    <link rel="stylesheet" type="text/css" href="/jquery-easyui-1.7.0/themes/icon.css">
+    <script type="text/javascript" src="/jquery-easyui-1.7.0/jquery.min.js"></script>
+    <script type="text/javascript" src="/jquery-easyui-1.7.0/jquery.easyui.min.js"></script>
+</head>
+<body>
+
+<div id="toolbars">
+    <div id="search">
+        <label> 姓名：</label>
+        <input type="text" id="stuName" name="stuName">
+
+        <label> 学号：</label>
+        <input type="text" id="stuNo" name="stuNo">
+
+        <label> 证件号：</label>
+        <input type="text" id="idno" name="idno">
+
+        <label>性别：</label>
+        <select type="text" id="sex" name="sex" style="width: 150px"></select>
+
+        <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-search',onClick:search">搜索</a>
+        <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-clear',onClick:clear">清空</a>
+    </div>
+</div>
+<table id="query-datagrid" class="easyui-datagrid" style="width:100%;height:450px"
+       data-options="url:'/students?stu_state=5',method:'get',fitColumns:true,striped:true,pagination:true,
+           rownumbers:true,toolbar:'#toolbars',singleSelect:true">
+    <thead>
+    <tr>
+        <th data-options="field:'stuName',width:100,align:'center'">姓名</th>
+        <th data-options="field:'stuNo',width:100,align:'center'">学号</th>
+        <th data-options="field:'_operation',formatter:overFinish,align:'center',width:200">发放证书</th>
+
+    </tr>
+    </thead>
+</table>
+</body>
+<script type="text/javascript">
+    //绑定性别
+    $("#sex").combobox({
+        data:[{
+            "id":"",
+            "text":"---请选择---",
+            "selected":true
+        },{
+            "id":"1",
+            "text":"男"
+        },{
+            "id":"0",
+            "text":"女"
+        }],
+        valueField:'id',
+        textField:'text'
+    });
+    function loadFilter(result) {
+        console.log(result)
+        return result;
+    }
+
+    //搜索
+    function search() {
+        $("#query-datagrid").datagrid({"queryParams":{
+                sex:$("#sex").combobox("getValue"),
+                stuName:$("#stuName").val(),
+                stuNo:$("#stuNo").val(),
+                idno:$("#idno").val()
+            }})
+    }
+    //清空
+    function clear() {
+        $("#sex").combobox("setValue",'');
+        $("#stuName").val('');
+        $("#stuNo").val('');
+        $("#idno").val('');
+    }
+
+    function overFinish(val,row,index) {
+        //如果已经发放,那么久不进行发放
+        var onclick="";
+        var disBtn=""
+        if ('0'==row.certificate){
+            disBtn = "发放结业证书";
+            onclick="finish("+index+")";
+            style='style="color:#FF1F29;text-decoration:none"';
+        }
+        if ('1'==row.certificate){
+            disBtn = "已经发放结业证书";
+            onclick="finish(-1)";
+            style='style="color:#92FF25;text-decoration:none"';
+        }
+
+          return '<a href="#" class="easyui-linkbutton"'+style+' rel="nofollow" onclick="'+onclick+'">'+disBtn+'</a>';
+    }
+    function finish(index) {
+        if (-1 == index){
+            $.messager.alert("提示","已经发送过结业证书，不能重复发送")
+        } else {
+            $("#query-datagrid").datagrid("selectRow",index);
+            var row=$("#query-datagrid").datagrid("getSelections");
+            var id = row[0].id;
+            var  actionUrl ="/pdfDown/?id="+id+"&certificate=1";
+            // window.open(actionUrl);
+            window.location.href=actionUrl;
+            setTimeout(function () {
+                $("#query-datagrid").datagrid("reload");
+            },3000);
+
+        }
+
+
+    }
+    /*总结一下为什么下载请求不能放在ajax里发送：
+原因：因为response原因，一般请求浏览器是会处理服务器输出的response，例如生成png、文件下载等,然而ajax请求只是个“字符型”的请求，即请求的内容是以文本类型存放的。文件的下载是以二进制形式进行的，虽然可以读取到返回的response，但只是读取而已，是无法执行的，说白点就是js无法调用到浏览器的下载处理机制和程序。
+文件下载可以使用window.location.href(),也可以使用window.open(),还可以使用form表单提交。*/
+</script>
+</html>

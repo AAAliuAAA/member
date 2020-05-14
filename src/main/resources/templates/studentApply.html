@@ -1,0 +1,39 @@
+
+<div  style="width:100%;max-width:400px;padding:30px 60px;">
+    <div >
+        <form id="applyForm"  action="/student">
+            <input  type="hidden" th:value="${student.id}" name="id">
+            <div style="margin-bottom:20px">
+                    <input class="easyui-textbox" name="stuName" style="width:100%" data-options="label:'姓名:'" th:value="${student.stuName}">
+            </div>
+            <div style="margin-bottom:20px">
+                <div>
+                    <label style="width: 80px;display: inline-block">性别</label>
+                    男：<input class="easyui-radiobutton" name="sex" value="1" th:checked="${student.sex == '1'} ? true : false">
+                    女：<input class="easyui-radiobutton" name="sex" value="0" th:checked="${student.sex == '0'} ? true : false">
+                </div>
+
+            </div>
+            <div style="margin-bottom:20px">
+                <input class="easyui-textbox" name="nation" style="width:100%" data-options="label:'民族:'" th:value="${student.nation}">
+            </div>
+            <div style="margin-bottom:20px">
+                <input class="easyui-textbox" name="idno" style="width:100%" data-options="label:'身份证号:'" th:value="${student.idno}">
+            </div>
+            <div style="margin-bottom:20px">
+                <input class="easyui-textbox" name="xueYuan" style="width:100%" data-options="label:'学院:'" th:value="${student.xueYuan}">
+            </div>
+            <div style="margin-bottom:20px">
+                <input class="easyui-textbox" name="profess" style="width:100%" data-options="label:'专业:'" th:value="${student.profess}">
+            </div>
+            <div style="margin-bottom:20px">
+                <input class="easyui-textbox" name="phone" style="width:100%" data-options="label:'电话:'" th:value="${student.phone}">
+            </div>
+            <div style="margin-bottom:20px">
+                <input class="easyui-textbox" name="email" style="width:100%" data-options="label:'邮箱:'" th:value="${student.email}">
+            </div>
+        </form>
+    </div>
+</div>
+
+

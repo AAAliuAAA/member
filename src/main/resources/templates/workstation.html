@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>工作台</title>
+    <link rel="stylesheet" type="text/css" href="/jquery-easyui-1.7.0/themes/black/easyui.css">
+    <link rel="stylesheet" type="text/css" href="/jquery-easyui-1.7.0/themes/icon.css">
+    <script type="text/javascript" src="/jquery-easyui-1.7.0/jquery.min.js"></script>
+    <script type="text/javascript" src="/jquery-easyui-1.7.0/jquery.easyui.min.js"></script>
+</head>
+<body>
+<div class="easyui-dialog" title="学生信息" id="dialog" style="width:400px"
+     data-options="closed:true,top:40,
+             buttons:[
+                {text:'保存',handler:saveDialog},
+                {text:'取消',handler:cancelDialog}]">
+</div>
+<div id="toolbars">
+    <div id="search">
+        <label> 姓名：</label>
+        <input type="text" id="stuName" name="stuName">
+
+        <label> 学号：</label>
+        <input type="text" id="stuNo" name="stuNo">
+
+        <label> 证件号：</label>
+        <input type="text" id="idno" name="idno">
+
+        <label>性别：</label>
+        <select type="text" id="sex" name="sex" style="width: 150px"></select>
+
+        <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-search',onClick:search">搜索</a>
+        <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-clear',onClick:clear">清空</a>
+    </div>
+</div>
+<table id="query-datagrid" class="easyui-datagrid" style="width:100%;height:450px"
+       data-options="url:'/students?approve_state=1',method:'get',fitColumns:true,striped:true,pagination:true,
+           rownumbers:true,toolbar:'#toolbars',onLoadSuccess:onLoadSuccess">
+    <thead>
+    <tr>
+        <th data-options="field:'stuName',width:100,align:'center'">姓名</th>
+        <th data-options="field:'stuNo',width:100,align:'center'">学号</th>
+        <th data-options="field:'operContent',formatter:operContent,align:'center',width:400">申请内容</th>
+        <th data-options="field:'_operation',formatter:operator,align:'center',width:200">操作</th>
+
+    </tr>
+    </thead>
+</table>
+</body>
+<script type="text/javascript">
+    var pos=new Array();
+    var btnOpr = ''; //转化对象
+    var flag = 'add'; //默认添加方法
+    var $dg = $("#query-datagrid");
+    //获得父标签的自定义属性
+    var iframe = window.top.document.getElementById('iframe');
+    var state = iframe.dataset.state;//读
+    if (state){
+        var $dg = $("#query-datagrid");
+        console.log(state)
+        if ('1'!=state){
+            $("#addTool").hide();
+        }
+    }
+    //绑定性别
+    $("#sex").combobox({
+        data:[{
+            "id":"",
+            "text":"---请选择---",
+            "selected":true
+        },{
+            "id":"1",
+            "text":"男"
+        },{
+            "id":"0",
+            "text":"女"
+        }],
+        valueField:'id',
+        textField:'text'
+    });
+    function loadFilter(result) {
+        console.log(result)
+        return result;
+    }
+    function formatterOper(val,row,index) {
+        if (row.sex=='0'){
+            return '女'
+        }
+        if (row.sex=='1'){
+            return '男'
+        }
+    }
+    function editFunc(index) {
+        flag = 'edit';
+        pos.push(index);
+        $("#query-datagrid").datagrid("selectRow", index);
+        var rows =  $("#query-datagrid").datagrid("getSelections");
+        if (rows.length > 1) {
+            $.messager.alert("警告", "不能同时编辑多行");
+        } else if (rows.length == 1) {
+            $.get("/student/" + rows[0].id, function (result) {
+                $('#dialog').dialog({"href": "","content":result});
+                $('#dialog').dialog("open");
+            })
+            pos.push($("#query-datagrid").datagrid("getRowIndex", rows[0]));
+        } else {
+            $.messager.alert("提示", "未选中目标");
+        }
+    }
+
+    function onLoadSuccess() {
+        if(pos && pos.length>0){
+            for(var i=0;i<pos.length;i++){
+                $("#query-datagrid").datagrid("selectRow",pos[i]);
+            }
+            pos.length=0;
+        }
+    }
+
+    //搜索
+    function search() {
+        $dg.datagrid({"queryParams":{
+                sex:$("#sex").combobox("getValue"),
+                stuName:$("#stuName").val(),
+                stuNo:$("#stuNo").val(),
+                idno:$("#idno").val(),
+                stu_state: state
+            }})
+    }
+    //清空
+    function clear() {
+        $("#sex").combobox("setValue",'');
+        $("#stuName").val('');
+        $("#stuNo").val('');
+        $("#idno").val('');
+    }
+    //保存
+    function saveDialog() {
+        var $applyForm = $("#applyForm")
+        var method;
+        $.messager.progress();
+        if ('add'==flag){
+            method = 'post';
+        } else {
+            method = 'put';
+        }
+        $.ajax({
+            url:$applyForm.attr("action"),
+            // type:$applyForm.attr("method"),
+            type: method,
+            data:$applyForm.serialize(),
+            success:function(data){
+                $.messager.progress("close");
+                $.messager.show({
+                    title:"成功",
+                    msg:'保存成功',
+                    showType:'slide'
+                })
+                $("#query-datagrid").datagrid("reload");
+                cancelDialog();
+            },
+            error:function(e){
+                $applyForm.dialog("close");
+                $.messager.show({
+                    title:"出错了",
+                    msg:e,
+                    showType:'slide'
+                })
+            }
+        })
+
+    }
+    function cancelDialog() {
+        $('#dialog').dialog("close");
+    }
+    function operator(val,row,index) {
+        return '<a href="#" rel="nofollow" style="text-decoration: none;color: red" onclick="ideaFunc('+index+',3)">拒绝</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'+
+            '<a href="#" rel="nofollow" style="text-decoration: none;color: #a8ff11" onclick="ideaFunc('+index+',2)">同意</a>'
+    }
+    function operContent(val,row,index){
+        var content='申请成为';
+        if ("1"==row.stu_state) {
+            content = content+'积极分子'
+        }
+        if ("2"==row.stu_state) {
+            content = content+'发展对象'
+        }
+        if ("3"==row.stu_state) {
+            content = content+'预备党员'
+        }
+        if ("4"==row.stu_state) {
+            content = content+'转正党员'
+        }
+        return '<span>'+content+'</span>';
+    }
+    function ideaFunc(index,ideaCode) {
+        var idea;
+        if (ideaCode==2){
+            idea = '同意';
+        }
+        if (ideaCode==3){
+            idea = '拒绝';
+        }
+        console.log(ideaCode+"---")
+            $("#query-datagrid").datagrid("selectRow",index);
+            var row=$("#query-datagrid").datagrid("getSelections");
+            if (row.length > 1) {
+                $.messager.alert("警告", "不能同时选择多行");
+            } else if (row.length == 1) {
+                $.ajax({
+                    type: "put",
+                    url: "/student",   //如果是同意则需要将状态更新为空
+                    data: {id: row[0].id, approve_state: ((ideaCode=='3') || (ideaCode=='2' && row[0].stu_state=='4'))?ideaCode :'4',stu_state:(ideaCode=='3')? '': parseInt(row[0].stu_state)+1},
+                    success: function (data) {
+                        $.messager.show({
+                            title: "操作",
+                            msg: '该申请已经'+idea,
+                            showType: 'slide'
+                        })
+                        $("#query-datagrid").datagrid("reload");
+                    },
+                    error: function (e) {
+                        $.messager.show({
+                            title: "其他错误",
+                            msg: e,
+                            showType: 'slide'
+                        })
+                    }
+                })
+            }
+    }
+</script>
+</html>

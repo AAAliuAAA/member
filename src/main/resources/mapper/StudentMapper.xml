@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.member.dao.StudentDao">
+    <insert id="insert" parameterType="com.member.entity.Student" useGeneratedKeys="true"  keyProperty="entity.id">
+        insert into student(stuname,stuno,sex,nation,idno,xueyuan,profess,phone,email,stu_state,approve_state,certificate,pwd,roleId) values
+        (#{entity.stuName},#{entity.stuNo},#{entity.sex},#{entity.nation},#{entity.idno},#{entity.xueYuan},
+        #{entity.profess},#{entity.phone},#{entity.email},#{entity.stu_state},#{entity.approve_state},#{entity.certificate},#{entity.pwd},#{entity.roleId})
+    </insert>
+    <update id="update" parameterType="com.member.entity.Student">
+            update student
+            <if test="entity!=null">
+                <set>
+                    <if test="entity.stuName!=null and entity.stuName!=''">
+                        stuName=#{entity.stuName},
+                    </if>
+                    <if test="entity.stuNo!=null and entity.stuNo!=''">
+                        stuNo=#{entity.stuNo},
+                    </if>
+                    <if test="entity.sex!=null and entity.sex!=''">
+                        sex=#{entity.sex},
+                    </if>
+                    <if test="entity.nation!=null and entity.nation!=''">
+                        nation=#{entity.nation},
+                    </if>
+                    <if test="entity.idno!=null and entity.idno!=''">
+                        idno=#{entity.idno},
+                    </if>
+                    <if test="entity.phone!=null and entity.phone!=''">
+                        phone=#{entity.phone},
+                    </if>
+                    <if test="entity.email!=null and entity.email!=''">
+                        email=#{entity.email},
+                    </if>
+                  
+                    <if test="entity.xueYuan!=null and entity.xueYuan!=''">
+                        xueYuan=#{entity.xueYuan},
+                    </if>
+                    <if test="entity.profess!=null and entity.profess!=''">
+                        profess=#{entity.profess},
+                    </if>
+                    <if test="entity.stu_state!=null and entity.stu_state!=''">
+                        stu_state=#{entity.stu_state},
+                    </if>
+                    <if test="entity.approve_state!=null and entity.approve_state!=''">
+                        approve_state=#{entity.approve_state},
+                    </if>
+                    <if test="entity.certificate!=null and entity.certificate!=''">
+                        certificate=#{entity.certificate},
+                    </if>
+                    <if test="entity.pwd!=null and entity.pwd!=''">
+                        pwd=#{entity.pwd},
+                    </if>
+                </set>
+            </if>
+            where id=#{entity.id}
+    </update>
+    <select id="findByEntity" parameterType="com.member.entity.Student" resultType="com.member.entity.Student">
+        select * from student
+        <include refid="baseSql"/>
+    </select>
+    <select id="findAll" parameterType="com.member.entity.Student" resultType="com.member.entity.Student">
+        select * from student
+        <include refid="baseSql"/>
+    </select>
+    <delete id="delete">
+        delete from student
+        <where>
+            <if test="entity.id!=null and entity.id!=''">
+                and id=#{entity.id}
+            </if>
+        </where>
+    </delete>
+
+    <!--用于用户名和密码登录的精确查询-->
+    <select id="findById" parameterType="com.member.entity.Student" resultType="com.member.entity.Student">
+        select * from student
+        <where>
+            <if test="entity.stuNo!=null and entity.stuNo!=''">
+                and stuno=#{entity.stuNo}
+            </if>
+            <if test="entity.pwd!=null and entity.pwd!=''">
+                and pwd=#{entity.pwd}
+            </if>
+        </where>
+
+    </select>
+    <sql id="baseSql">
+        <if test="entity!=null">
+            <where>
+                <if test="entity.id!=null and entity.id!=''">
+                    and id=#{entity.id}
+                </if>
+                <if test="entity.stuName!=null and entity.stuName!=''">
+                    and stuName like concat('%',#{entity.stuName},'%')
+                </if>
+                <if test="entity.stuNo!=null and entity.stuNo!=''">
+                    and stuNo like concat('%',#{entity.stuNo},'%')
+                </if>
+                <if test="entity.sex!=null and entity.sex!=''">
+                    and sex=#{entity.sex}
+                </if>
+                <if test="entity.nation!=null and entity.nation!=''">
+                    and nation like concat('%',#{entity.nation},'%')
+                </if>
+
+                <if test="entity.idno!=null and entity.idno!=''">
+                    and idno like concat('%',#{entity.idno},'%')
+                </if>
+                <if test="entity.xueYuan!=null and entity.xueYuan!=''">
+                    and xueYuan=#{entity.xueYuan}
+                </if>
+                <if test="entity.profess!=null and entity.profess!=''">
+                    and profess=#{entity.profess}
+                </if>
+                <if test="entity.phone!=null and entity.phone!=''">
+                    and phone=#{entity.phone}
+                </if>
+                <if test="entity.email!=null and entity.email!=''">
+                    and email=#{entity.email}
+                </if>
+                <if test="entity.stu_state!=null and entity.stu_state!=''">
+                    and stu_state=#{entity.stu_state}
+                </if>
+                <if test="entity.approve_state!=null and entity.approve_state!=''">
+                    and approve_state=#{entity.approve_state}
+                </if>
+                <if test="entity.certificate!=null and entity.certificate!=''">
+                    and certificate=#{entity.certificate}
+                </if>
+                <if test="entity.pwd!=null and entity.pwd!=''">
+                    and pwd=#{entity.pwd}
+                </if>
+
+            </where>
+        </if>
+    </sql>
+</mapper>

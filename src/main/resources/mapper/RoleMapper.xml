@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.member.dao.RoleDao">
+    <select id="selectRoleByUserId" parameterType="int" resultType="string">
+        select roleName from student s inner join role r on s.roleId=r.id where s.id=#{userid}
+    </select>
+    <select id="findAllPermissions" parameterType="int" resultType="string">
+        select perms from permission p inner join role r on p.roleId=r.id where r.id=#{roleid}
+    </select>
+</mapper>

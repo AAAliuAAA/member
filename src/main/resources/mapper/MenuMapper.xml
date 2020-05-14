@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.member.dao.MenuDao">
+    <select id="findAll" resultType="com.member.entity.Menu">
+        select * from menu
+        <if test="entity!=null">
+            <where>
+                <if test="entity.id!=null and entity.id!=''">
+                    and id=#{entity.id}
+                </if>
+                <if test="entity.name!=null and entity.name!=''">
+                    and name=#{entity.name}
+                </if>
+                <if test="entity.parentNode!=null and entity.parentNode!=''">
+                    and parentNode=#{entity.parentNode}
+                </if>
+                <if test="entity.url!=null and entity.url!=''">
+                    and url=#{entity.url}
+                </if>
+                <if test="entity.node!=null and entity.node!=''">
+                    and node=#{entity.node}
+                </if>
+            </where>
+        </if>
+         order by node
+    </select>
+</mapper>

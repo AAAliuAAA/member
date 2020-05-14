@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <meta charset="UTF-8">
+    <title>申请查询</title>
+    <link rel="stylesheet" type="text/css" href="/jquery-easyui-1.7.0/themes/black/easyui.css">
+    <link rel="stylesheet" type="text/css" href="/jquery-easyui-1.7.0/themes/icon.css">
+    <script type="text/javascript" src="/jquery-easyui-1.7.0/jquery.min.js"></script>
+    <script type="text/javascript" src="/jquery-easyui-1.7.0/jquery.easyui.min.js"></script>
+</head>
+<body>
+    <div class="easyui-dialog" title="学生信息" id="dialog" style="width:400px"
+         data-options="closed:true,top:40,
+             buttons:[
+                {text:'保存',handler:saveDialog},
+                {text:'取消',handler:cancelDialog}]">
+    </div>
+    <div id="toolbars">
+        <shiro:hashRole name = "admin1">
+            <a href="#" id="addTool" class="easyui-linkbutton" data-options="iconCls:'icon-add',onClick:addFunc">添加</a>
+        </shiro:hashRole>
+
+        <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-edit',onClick:editFunc">修改</a>
+        <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-remove',onClick:delFunc">删除</a>
+        <div id="search">
+            <label> 姓名：</label>
+            <input type="text" id="stuName" name="stuName">
+
+            <label> 学号：</label>
+            <input type="text" id="stuNo" name="stuNo">
+
+            <label> 证件号：</label>
+            <input type="text" id="idno" name="idno">
+
+            <label>性别：</label>
+            <select type="text" id="sex" name="sex" style="width: 150px"></select>
+
+            <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-search',onClick:search">搜索</a>
+            <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-clear',onClick:clear">清空</a>
+        </div>
+    </div>
+    <table id="query-datagrid" class="easyui-datagrid" style="width:100%;height:450px"
+           data-options="url:'/students',method:'get',fitColumns:true,striped:true,pagination:true,
+           rownumbers:true,toolbar:'#toolbars',onLoadSuccess:onLoadSuccess">
+        <thead>
+        <tr>
+            <th data-options="field:'stuName',width:100,align:'center'">姓名</th>
+            <th data-options="field:'stuNo',width:100,align:'center'">学号</th>
+            <th data-options="field:'sex',width:80,formatter:formatterOper,align:'center'">性别</th>
+            <th data-options="field:'nation',width:100,align:'center'">民族</th>
+            <th data-options="field:'idno',width:100,align:'center'">身份证号</th>
+            <th data-options="field:'xueYuan',width:100,align:'center'">学院</th>
+            <th data-options="field:'profess',width:110,align:'center'">专业</th>
+            <th data-options="field:'phone',width:100,align:'center'">电话</th>
+            <th data-options="field:'email',width:110,align:'center'">邮箱</th>
+            <th data-options="field:'_operation',formatter:upper,align:'center',width:200">状态</th>
+
+        </tr>
+        </thead>
+    </table>
+</body>
+<script type="text/javascript">
+    var pos=new Array();
+    var btnOpr = ''; //转化对象
+    var flag = 'add'; //默认添加方法
+        //获得父标签的自定义属性
+    var iframe = window.top.document.getElementById('iframe');
+    var state = iframe.dataset.state;//读
+   if (state){
+       var $dg = $("#query-datagrid");
+       $dg.datagrid({"queryParams":{
+              stu_state: state
+           }})
+       console.log(state)
+       if ('1'!=state){
+           $("#addTool").hide();
+       }
+   }
+   //绑定性别
+    $("#sex").combobox({
+            data:[{
+                "id":"",
+                "text":"---请选择---",
+                "selected":true
+            },{
+                "id":"1",
+                "text":"男"
+            },{
+                "id":"0",
+                "text":"女"
+            }],
+            valueField:'id',
+            textField:'text'
+        });
+    function loadFilter(result) {
+        console.log(result)
+        return result;
+    }
+    function formatterOper(val,row,index) {
+        if (row.sex=='0'){
+            return '女'
+        }
+        if (row.sex=='1'){
+            return '男'
+        }
+    }
+    //添加
+        function addFunc() {
+            flag = 'add';
+            $('#dialog').dialog({"href":"studentApply.html"});
+            $('#dialog').dialog("open");
+        }
+        function editFunc(index) {
+            flag = 'edit';
+            pos.push(index);
+            $("#query-datagrid").datagrid("selectRow", index);
+            var rows =  $("#query-datagrid").datagrid("getSelections");
+            if (rows.length > 1) {
+                $.messager.alert("警告", "不能同时编辑多行");
+            } else if (rows.length == 1) {
+                $.get("/student/" + rows[0].id, function (result) {
+                    $('#dialog').dialog({"href": "","content":result});
+                    $('#dialog').dialog("open");
+                })
+                pos.push($("#query-datagrid").datagrid("getRowIndex", rows[0]));
+            } else {
+                $.messager.alert("提示", "未选中目标");
+            }
+        }
+
+        function onLoadSuccess() {
+            if(pos && pos.length>0){
+                for(var i=0;i<pos.length;i++){
+                    $("#query-datagrid").datagrid("selectRow",pos[i]);
+                }
+                pos.length=0;
+            }
+        }
+
+    //删除
+    function delFunc(index) {
+            $("#query-datagrid").datagrid("selectRow",index);
+            var rows=$("#query-datagrid").datagrid("getSelections");
+            var ids="";
+            if (rows && rows.length>0){
+                $.messager.confirm("提示","你确定要删除嘛？",function(r){
+                    $.messager.progress();
+                    if(r){
+                        $.each(rows,function(i){
+                            ids+=rows[i].id;
+                            if(i<rows.length-1){
+                                ids+=",";
+                            }
+                        });
+                        $.ajax({
+                            type:"delete",
+                            url:"/student/"+ids,
+                            success:function(data){
+                                $.messager.progress("close");
+                                $.messager.show({
+                                    title:"成功",
+                                    msg:'删除成功',
+                                    showType:'slide'
+                                })
+                                $("#query-datagrid").datagrid("reload");
+                            },
+                            error:function(e){
+                                $.messager.progress("close");
+                                $.messager.show({
+                                    title:"其他错误",
+                                    msg:e,
+                                    showType:'slide'
+                                })
+                            }
+                        })
+                    }else {
+                        $.messager.progress("close");
+                    }
+                })
+            }else {
+                $.messager.alert("警告","你还未选择目标")
+            }
+
+        }
+    //搜索
+    function search() {
+        $dg.datagrid({"queryParams":{
+                sex:$("#sex").combobox("getValue"),
+                stuName:$("#stuName").val(),
+                stuNo:$("#stuNo").val(),
+                idno:$("#idno").val(),
+                stu_state: state
+            }})
+    }
+    //清空
+    function clear() {
+        $("#sex").combobox("setValue",'');
+        $("#stuName").val('');
+        $("#stuNo").val('');
+        $("#idno").val('');
+    }
+    //保存
+    function saveDialog() {
+        var $applyForm = $("#applyForm")
+        var method;
+        $.messager.progress();
+        if ('add'==flag){
+            method = 'post';
+        } else {
+            method = 'put';
+        }
+        $.ajax({
+            url:$applyForm.attr("action"),
+            // type:$applyForm.attr("method"),
+            type: method,
+            data:$applyForm.serialize(),
+            success:function(data){
+                $.messager.progress("close");
+                $.messager.show({
+                    title:"成功",
+                    msg:'保存成功',
+                    showType:'slide'
+                })
+                $("#query-datagrid").datagrid("reload");
+                cancelDialog();
+            },
+            error:function(e){
+                $.messager.progress("close");
+                $applyForm.dialog("close");
+                $.messager.show({
+                    title:"出错了",
+                    msg:e,
+                    showType:'slide'
+                })
+            }
+        })
+
+    }
+    function cancelDialog() {
+        $('#dialog').dialog("close");
+    }
+    function upper(val,row,index) {
+        var style='style="text-decoration:none;color:#FF7C30"';
+        var onclick = "";
+        if ('1'==state){
+            btnOpr='转为积极分子';
+            onclick="upperFun("+index+")";
+        } else if('2'==state){
+            btnOpr='转为发展对象';
+            onclick="upperFun("+index+")";
+        }else if('3'==state) {
+            btnOpr = '转为预备党员';
+            onclick = "upperFun(" + index + ")";
+        }else if('4'==state){
+                btnOpr='转为正式党员';
+                onclick="upperFun("+index+")";
+            }
+        //对数据在进行一次覆盖
+        console.log(row)
+
+        if ('1'==row.approve_state) {
+            btnOpr = '正在申请'
+            onclick="upperFun(-1)";
+            style='style="color:red;text-decoration:none"';
+        }
+        if ('2'==row.approve_state) {
+            btnOpr = '已同意'
+            onclick="upperFun(-1)";
+            style='style="color:#a8ff11;text-decoration:none"';
+        }
+        if ('3'==row.approve_state) {
+            btnOpr = '已拒绝'
+            onclick="upperFun(-1)";
+            style='style="color:#a8ff11;text-decoration:none"';
+        }
+        return '<a href="#" class="easyui-linkbutton"'+style+' rel="nofollow" onclick="'+onclick+'">'+btnOpr+'</a>';
+    }
+    function upperFun(index) {
+        console.log(index)
+        if (-1==index){
+            $.messager.alert("提示","操作已经进行过，不能继续重复操作")
+        } else {
+
+            $.messager.confirm("提示", "你确定要申请吗？", function (r) {
+                if (r) {
+                    $("#query-datagrid").datagrid("selectRow", index);
+                    var row = $("#query-datagrid").datagrid("getSelections");
+                    if (row.length > 1) {
+                        $.messager.alert("警告", "不能同时选择多行");
+                    } else if (row.length == 1) {
+                        $.ajax({
+                            type: "put",
+                            url: "/student",
+                            data: {id: row[0].id, approve_state: 1},
+                            success: function (data) {
+                                $.messager.show({
+                                    title: "成功",
+                                    msg: '申请已经送达',
+                                    showType: 'slide'
+                                })
+                                $("#query-datagrid").datagrid("reload");
+                            },
+                            error: function (e) {
+                                $.messager.show({
+                                    title: "其他错误",
+                                    msg: e,
+                                    showType: 'slide'
+                                })
+                            }
+                        })
+                    } else {
+                        $.messager.alert("提示", "未选中目标");
+                    }
+                }
+            })
+        }
+   }
+</script>
+</html>
