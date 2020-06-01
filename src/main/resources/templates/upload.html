@@ -25,14 +25,38 @@
             <input readonly  type="submit" class="easyui-linkbutton" style="width:50%;height: 28px" value="上传"/>
         </div>
     </form>
-    <form id="downForm" method="get" action="/student_file/download" >
         <div style="margin-bottom:20px">
-            <input type="text" class="easyui-validatebox" labelPosition="top" name="name" id="filedownload"
-                   data-options="text: '输入学生姓名下载学生档案'" placeholder="输入学生姓名下载学生档案" style="width:50%">
+            <input id="stuName" type="text" class="easyui-validatebox" labelPosition="top" name="name" id="filedownload"
+                   data-options="text: '输入学生姓名查找学生档案'" placeholder="输入学生姓名查找学生档案" style="width:50%">
         </div>
         <div>
-            <input readonly  type="submit" class="easyui-linkbutton" style="width:50%;height: 28px" value="下载"/>
+            <input id="query" readonly  type="submit" class="easyui-linkbutton" style="width:50%;height: 28px" value="查询"/>
         </div>
-    </form>
+
+    <table id="stu_table" style="visibility: hidden" >
+        <thead>
+            <tr><th colspan="2">之前上传的文件</th></tr>
+        </thead>
+        <tbody>
+            <tr><td class="stu_name">小花</td><td>小花1.pdf</td></tr>
+            <tr><td class="stu_name">小花</td><td>小花2.pdf</td></tr>
+            <tr><td class="stu_name">小花</td><td>小花6.pdf</td></tr>
+            <tr><td class="stu_name">小花</td><td>小花3.pdf</td></tr>
+        </tbody>
+    </table>
 </body>
+<script src="http://libs.baidu.com/jquery/2.1.4/jquery.min.js"></script>
+        <script>
+          $(function () {
+                $("#query").click(function(){
+                  var stuName = $("#stuName").val();
+                  $("td").each(function(){
+                    var source = $(this).text();
+                    var found = source.match(/小.{1}/);
+                    $(this).text( source.replace(found,stuName))
+                  });
+                  $("#stu_table").css('visibility','visible');
+                })
+          })
+        </script>
 </html>
