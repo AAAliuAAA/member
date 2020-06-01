@@ -12,10 +12,26 @@
     <form id="upForm" enctype="multipart/form-data" method="post" action="/upload" >
         <div style="margin-bottom:20px">
             <input class="easyui-filebox easyui-validatebox" labelPosition="top" name="fileUpload" id="fileUpload"
-                   data-options="buttonText: '选择文件',required:true" style="width:50%">
+                   data-options="buttonText: '选择文件',required:true" style="width:30%">
+            <select class="easyui" style="width: 150px">
+                <option>小花</option>
+                <option>小绿</option>
+                <option>米米</option>
+                <option>小燕</option>
+                <option>小猪</option>
+            </select>
         </div>
         <div>
             <input readonly  type="submit" class="easyui-linkbutton" style="width:50%;height: 28px" value="上传"/>
+        </div>
+    </form>
+    <form id="downForm" method="get" action="/student_file/download" >
+        <div style="margin-bottom:20px">
+            <input type="text" class="easyui-validatebox" labelPosition="top" name="name" id="filedownload"
+                   data-options="text: '输入学生姓名下载学生档案'" placeholder="输入学生姓名下载学生档案" style="width:50%">
+        </div>
+        <div>
+            <input readonly  type="submit" class="easyui-linkbutton" style="width:50%;height: 28px" value="下载"/>
         </div>
     </form>
 </body>

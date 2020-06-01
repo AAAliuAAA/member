@@ -5,6 +5,7 @@ import com.member.service.StudentServiceImp;
 import com.member.util.PDFUtil;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -115,6 +116,33 @@ public class FileOperatorController {
         downloadTool(response,path,filename);
         return ResponseEntity.ok("");
     }
+
+    @GetMapping("/student_file/download")
+    public ResponseEntity getStuFile(@RequestParam(value = "name",required = false) String studentName,HttpServletResponse response) throws UnsupportedEncodingException {
+        File file = new File(Class.class.getClass().getResource("/").getPath() + "/static/upload/11[[73958f91-9492-47d5-a808-0f4828077046]].pdf");
+        byte[] body = null;
+        InputStream is = null;
+        try {
+            is = new FileInputStream(file);
+            body = new byte[is.available()];
+            is.read(body);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                is.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Disposition", "attchement;filename=" + (studentName==null?"1.pdf":studentName+".pdf"));
+        HttpStatus statusCode = HttpStatus.OK;
+        ResponseEntity<byte[]> entity = new ResponseEntity<byte[]>(body, headers, statusCode);
+        return entity;
+    }
+
 
     public void  downloadTool(HttpServletResponse response,String path,String fileName) throws UnsupportedEncodingException {
         File file = new File(path);
